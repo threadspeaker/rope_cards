@@ -1,0 +1,6 @@
+@RopeCards_HostAddress = http://localhost:5079
+
+GET {{RopeCards_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

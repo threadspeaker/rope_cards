@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RopeCards")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8fe3597831c7aad8b11480d22d017ae10edcb8f5")]
 [assembly: System.Reflection.AssemblyProductAttribute("RopeCards")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RopeCards")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

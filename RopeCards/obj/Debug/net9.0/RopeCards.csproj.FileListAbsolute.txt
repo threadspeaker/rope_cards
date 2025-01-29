@@ -143,3 +143,10 @@ C:\Users\aaron\source\rope_cards\RopeCards\obj\Debug\net9.0\refint\RopeCards.dll
 C:\Users\aaron\source\rope_cards\RopeCards\obj\Debug\net9.0\RopeCards.pdb
 C:\Users\aaron\source\rope_cards\RopeCards\obj\Debug\net9.0\RopeCards.genruntimeconfig.cache
 C:\Users\aaron\source\rope_cards\RopeCards\obj\Debug\net9.0\ref\RopeCards.dll
+C:\Users\aaron\source\rope_cards\RopeCards\obj\Debug\net9.0\RopeCards.sourcelink.json
+C:\Users\aaron\source\rope_cards\RopeCards\bin\Debug\net9.0\Microsoft.AspNetCore.JsonPatch.dll
+C:\Users\aaron\source\rope_cards\RopeCards\bin\Debug\net9.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll
+C:\Users\aaron\source\rope_cards\RopeCards\bin\Debug\net9.0\Microsoft.AspNetCore.Razor.Language.dll
+C:\Users\aaron\source\rope_cards\RopeCards\bin\Debug\net9.0\Microsoft.CodeAnalysis.Razor.dll
+C:\Users\aaron\source\rope_cards\RopeCards\bin\Debug\net9.0\Newtonsoft.Json.dll
+C:\Users\aaron\source\rope_cards\RopeCards\bin\Debug\net9.0\Newtonsoft.Json.Bson.dll

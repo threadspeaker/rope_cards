@@ -1,4 +1,4 @@
-namespace Backend.Models
+namespace RopeCards.Models
 {
     public class Todo
     {

@@ -1,4 +1,4 @@
-using Backend.Models;
+using RopeCards.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace RopeCards.Data
@@ -9,9 +9,7 @@ namespace RopeCards.Data
             : base(options)
         {
         }
-        
-        // You'll add your DbSet properties here later
-        // public DbSet<YourModel> YourModels { get; set; }
-        public DbSet<Todo> Todos { get; set; }
+
+        public DbSet<User> Users { get; set; }
     }
 }

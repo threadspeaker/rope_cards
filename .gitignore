@@ -6,7 +6,7 @@ frontend/build
 frontend/dist
 
 # Backend
-backend/bin
-backend/obj
-backend/.vs
-backend/*.user
+ScoutFriends/bin
+ScoutFriends/obj
+ScoutFriends/.vs
+ScoutFriends/*.user

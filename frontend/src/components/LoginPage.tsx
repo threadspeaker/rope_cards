@@ -11,7 +11,6 @@ const LoginPage = () => {
         setIsLoading(true);
 
         try {
-            console.log('Attempting to send request...');
             const response = await fetch('api/auth/login', {
                 method: 'POST',
                 headers: {
@@ -19,20 +18,17 @@ const LoginPage = () => {
                 },
                 body: JSON.stringify({ username }),
             });
-            console.log('Resposne status:', response.status)
 
             if (!response.ok) {
                 throw new Error('Failed to log in');
             }
 
             const data = await response.json();
-            console.log('Response data:', data);
             // Handle successful login
             console.log('Logged in as:', data.username);
             
             // Add navigation logic here later
         } catch (err) {
-            console.error('Fetch error:', err);
             setError('Failed to log in. Please try again.');
         } finally {
             setIsLoading(false);

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ScoutFriends.Data;
+using ScoutFriends.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -7,6 +8,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 
 // Add CORS
 builder.Services.AddCors(options =>
@@ -15,7 +17,8 @@ builder.Services.AddCors(options =>
         builder => builder
             .WithOrigins("http://localhost:3000")
             .AllowAnyMethod()
-            .AllowAnyHeader());
+            .AllowAnyHeader()
+            .AllowCredentials());
 });
 
 var app = builder.Build();
@@ -24,13 +27,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-    // Temporarily disable HTTPS redirection for development
-    // app.UseHttpsRedirection();
 }
 
 app.UseRouting();
 app.UseCors("AllowReactApp");
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<GameHub>("/gamehub");
 
 app.Run();

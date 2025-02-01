@@ -15,16 +15,16 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<User>> Login(LoginRequest request)
+    public async Task<ActionResult<Player>> Login(LoginRequest request)
     {
         Console.WriteLine("Got a request!");
         var user = await _context.Users
-            .FirstOrDefaultAsync(u => u.Username == request.Username);
+            .FirstOrDefaultAsync(u => u.Name == request.Username);
 
         if (user == null)
         {
             // Create new user if they don't exist
-            user = new User { Username = request.Username };
+            user = new Player { ConnectionId = "1", Name = request.Username };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
         }

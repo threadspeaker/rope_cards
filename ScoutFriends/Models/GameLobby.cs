@@ -9,6 +9,7 @@ namespace ScoutFriends.Models
         public GameState State { get; set; } = GameState.WaitingForPlayers;
         public List<Player> Players { get; set; } = new();
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-        public int MaxPlayers { get; set; } = 4;
+        public int MinPlayers { get; set; } = 3;
+        public int MaxPlayers { get; set; } = 5;
     }
 }

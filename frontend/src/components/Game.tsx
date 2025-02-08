@@ -81,7 +81,7 @@ export const Game: React.FC = () => {
     // connection?.invoke('PlayCards', cards);
   };
 
-  const handleScout = (card: GameCard) => {
+  const handleScout = (card: GameCard, insertionPoint: number) => {
     console.log("It's time to scout some cards!");
     // connection?.invoke('ScoutCard', card);
   };

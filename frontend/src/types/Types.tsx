@@ -1,4 +1,9 @@
+export type ScoutMode = {
+    selectedCard: GameCard;
+} | null;
+
 export type GameCard = {
+    isInsertion?: boolean;
     Primary: number;
     Secondary: number;
 };
@@ -20,21 +25,21 @@ export type GameState = {
 
 export const parseGameState = (serverState: any): GameState => {
     return {
-      Players: serverState.players.map((player: any) => ({
-        Name: player.name,
-        IsTurn: player.isTurn,
-        Cards: player.cards.map((card: any) => ({
-          Primary: card.primary,
-          Secondary: card.secondary
+        Players: serverState.players.map((player: any) => ({
+            Name: player.name,
+            IsTurn: player.isTurn,
+            Cards: player.cards.map((card: any) => ({
+                Primary: card.primary,
+                Secondary: card.secondary
+            })),
+            Points: player.points
         })),
-        Points: player.points
-      })),
-      CurrentPlay: serverState.currentPlay ? {
-        PlayerName: serverState.currentPlay.playerName,
-        Cards: serverState.currentPlay.cards.map((card: any) => ({
-          Primary: card.primary,
-          Secondary: card.secondary
-        }))
-      } : undefined
+        CurrentPlay: serverState.currentPlay ? {
+            PlayerName: serverState.currentPlay.playerName,
+            Cards: serverState.currentPlay.cards.map((card: any) => ({
+                Primary: card.primary,
+                Secondary: card.secondary
+            }))
+        } : undefined
     };
-  }
+}

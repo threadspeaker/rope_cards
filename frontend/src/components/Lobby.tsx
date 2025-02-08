@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSignalR } from './SignalRContext';
-import { useGame, Player } from './GameContext';
+import { useGame } from './GameContext';
 
 export const Lobby: React.FC = () => {
     const {
@@ -8,52 +8,59 @@ export const Lobby: React.FC = () => {
         lobbyId, setLobbyId,
         players, setPlayers,
         isHost, setIsHost,
-        setGameState
+        setPageState
     } = useGame();
 
     const [error, setError] = useState('');
     const [inLobby, setInLobby] = useState(false);
     const { connection } = useSignalR();
 
+    const handleLobbyCreated = useCallback((lobbyId: string, hostName: string) => {
+        setLobbyId(lobbyId);
+        setInLobby(true);
+        setIsHost(true);
+        setPlayers(prev => [...prev, { name: hostName, isHost: true }]);
+        setError('');
+    }, [isHost]);
+
+    const handlePlayerJoined = useCallback((playerName: string, isHost: boolean) => {
+        setPlayers(prev => [...prev, { name: playerName, isHost: isHost }]);
+        setError('');
+    }, []); // No dependencies needed since we're using functional updates
+
+    const handlePlayerLeft = useCallback((playerName: string) => {
+        setPlayers(prev => prev.filter(p => p.name !== playerName));
+    }, []); // No dependencies needed since we're using functional updates
+
+    const handleNewHost = useCallback((hostName: string) => {
+        setPlayers(prev => prev.map(p => ({
+            ...p,
+            isHost: p.name === hostName
+        })));
+        setIsHost(playerName === hostName);
+    }, []); // No dependencies needed since we're using functional updates
+
     useEffect(() => {
         if (!connection) return;
 
         // Set up event handlers
-        connection.on('LobbyCreated', (lobbyId: string, hostName: string) => {
-            setLobbyId(lobbyId);
-            setInLobby(true);
-            setIsHost(true);
-            setPlayers(prev => [...prev, { name: hostName, isHost: true }]);
-            setError('');
-        });
-
-        connection.on('PlayerJoined', (playerName: string, isHost: boolean) => {
-            setPlayers(prev => [...prev, { name: playerName, isHost: isHost }]);
-            setError('');
-        });
-
-        connection.on('PlayerLeft', (playerName: string) => {
-            setPlayers(prev => prev.filter(p => p.name !== playerName));
-        });
-
-        connection.on('NewHost', (playerName: string) => {
-            setPlayers(prev => prev.map(p => ({
-                ...p,
-                isHost: p.name === playerName
-            })));
-            setIsHost(playerName === playerName);
-        });
-
+        connection.on('LobbyCreated', handleLobbyCreated);
+        connection.on('PlayerJoined', handlePlayerJoined);
+        connection.on('PlayerLeft', handlePlayerLeft);
+        connection.on('NewHost', handleNewHost);
         connection.on('GameStarted', () => {
-            setGameState('game');
+            setPageState('game');
         });
-
         connection.on('Error', (message: string) => {
             setError(message);
         });
-
         return () => {
-            connection.off('GameEvent');
+            connection.off('LobbyCreated');
+            connection.off('PlayerJoined');
+            connection.off('PlayerLeft');
+            connection.off('NewHost');
+            connection.off('GameStarted');
+            connection.off('Error');
         };
     }, [connection]);
 

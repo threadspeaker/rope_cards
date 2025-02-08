@@ -15,6 +15,6 @@ export const App: React.FC = () => {
 };
 
 const GameStateRouter: React.FC = () => {
-  const { gameState } = useGame();
-  return gameState === 'lobby' ? <Lobby /> : <Game />;
+  const { pageState } = useGame();
+  return pageState === 'lobby' ? <Lobby /> : <Game />;
 };

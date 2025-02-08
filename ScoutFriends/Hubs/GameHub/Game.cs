@@ -87,12 +87,12 @@ namespace ScoutFriends.Hubs
             // Setup and deal cards
             DealCards(lobby);
             // Set first player
-            lobby.Players[0].isTurn = true;
+            lobby.Players[0].IsTurn = true;
             // Put together player state
             var gameState = lobby.Players.Select(p => new PlayerGameState
             {
                 Name = p.Name,
-                IsTurn = p.isTurn,
+                IsTurn = p.IsTurn,
                 Cards = p.Cards,
                 Points = p.Points
             }).ToList();

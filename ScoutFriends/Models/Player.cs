@@ -8,7 +8,7 @@ namespace ScoutFriends.Models
         public List<Card> Cards { get; set; } = [];
         public int Points { get; set; } = 0;
 
-        public bool isTurn { get; set; } = false;
+        public bool IsTurn { get; set; } = false;
     }
 
     // DTO

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { GameState } from '../types/Types';
 
 export interface Player {
     name: string;
@@ -14,8 +15,10 @@ interface GameContextType {
     setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
     isHost: boolean;
     setIsHost: React.Dispatch<React.SetStateAction<boolean>>;
-    gameState: 'lobby' | 'game';
-    setGameState: React.Dispatch<React.SetStateAction<'lobby' | 'game'>>;
+    pageState: 'lobby' | 'game';
+    setPageState: React.Dispatch<React.SetStateAction<'lobby' | 'game'>>;
+    gameState: GameState | null;
+    setGameState: React.Dispatch<React.SetStateAction<GameState | null>>;
 }
 
 const GameContext = createContext<GameContextType | null>(null);
@@ -25,7 +28,8 @@ export const GameProvider: React.FC<{children: React.ReactNode}> = ({ children }
     const [lobbyId, setLobbyId] = useState('');
     const [players, setPlayers] = useState<Player[]>([]);
     const [isHost, setIsHost] = useState(false);
-    const [gameState, setGameState] = useState<'lobby' | 'game'>('lobby');
+    const [pageState, setPageState] = useState<'lobby' | 'game'>('lobby');
+    const [gameState, setGameState] = useState<GameState | null>(null);
 
     return (
         <GameContext.Provider value={{
@@ -33,6 +37,7 @@ export const GameProvider: React.FC<{children: React.ReactNode}> = ({ children }
             lobbyId, setLobbyId,
             players, setPlayers,
             isHost, setIsHost,
+            pageState: pageState, setPageState: setPageState,
             gameState, setGameState
         }}>
             {children}

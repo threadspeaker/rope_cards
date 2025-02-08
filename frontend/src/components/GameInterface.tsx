@@ -7,7 +7,7 @@ type GameInterfaceProps = {
     gameState: GameState;
     currentUserName: string;
     onPlay: (cards: GameCard[]) => void;
-    onScout: (card: GameCard, insertionPoint: number) => void;
+    onScout: (card: GameCard) => void;
 };
 
 const GameInterface: React.FC<GameInterfaceProps> = ({
@@ -16,48 +16,16 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     onPlay,
     onScout
 }) => {
-    const [scoutMode, setScoutMode] = useState<{
-        selectedCard: GameCard;
-        insertionPoint: number | null;
-    } | null>(null);
+    
     const [selectedHandCards, setSelectedHandCards] = useState<GameCard[]>([]);
     const [selectedPlayCard, setSelectedPlayCard] = useState<GameCard | null>(null);
-
+    
     // Don't try rendering stuff if we don't have a proper game state yet
     if (!gameState?.Players) {
         return <div>Invalid game state</div>;
     }
     const currentPlayer = gameState.Players.find(p => p.IsTurn);
     const currentUserInfo = gameState.Players.find(p => p.Name === currentUserName);
-
-    // Function to generate cards array with insertion points
-    const getHandWithInsertionPoints = (hand: GameCard[]) => {
-        if (!scoutMode) return hand;
-
-        const result: (GameCard & { isInsertionPoint?: boolean })[] = [];
-        // Add insertion point before first card
-        result.push({ Primary: -1, Secondary: 0, isInsertionPoint: true });
-
-        hand.forEach((card, index) => {
-            result.push(card);
-            // Add insertion point after each card.
-            // We will sneakily put the insert card's index in the secondary number space for later use
-            result.push({ Primary: -1, Secondary: (index + 1) * 2, isInsertionPoint: true });
-        });
-
-        return result;
-    };
-
-    // When scout button is clicked:
-    const handleScoutClick = () => {
-        if (selectedPlayCard) {
-            setScoutMode({
-                selectedCard: selectedPlayCard,
-                insertionPoint: null
-            });
-            setSelectedPlayCard(null);
-        }
-    };
 
     const handlePlayCardClick = (card: GameCard) => {
         if (!currentUserInfo?.IsTurn) return;
@@ -124,10 +92,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                 // For now, we will deselect everything to be safe.
                 return [];
                 /* return prev.filter(c =>
-                !(c.Primary === card.Primary && c.Secondary === card.Secondary)
+                    !(c.Primary === card.Primary && c.Secondary === card.Secondary)
                 ); **/
             }
-            
+
             return prev;
         });
     };
@@ -159,76 +127,38 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                     label={`${gameState.CurrentPlay.PlayerName}'s Play`}
                     selectable={currentUserInfo?.IsTurn || false}
                     selectedCards={selectedPlayCard ? [selectedPlayCard] : []}
-                    insertFilter={false}
                     onCardClick={handlePlayCardClick}
                 />
             )}
 
+            {currentUserInfo?.IsTurn && (
+                <div className="flex justify-center gap-4">
+                    <button
+                        className={`px-4 py-2 rounded ${canPlay ? 'bg-green-500 text-white' : 'bg-gray-300'}`}
+                        disabled={!canPlay}
+                        onClick={() => onPlay(selectedHandCards)}
+                    >
+                        Play
+                    </button>
+                    <button
+                        className={`px-4 py-2 rounded ${canScout ? 'bg-green-500 text-white' : 'bg-gray-300'}`}
+                        disabled={!canScout}
+                        onClick={() => selectedPlayCard && onScout(selectedPlayCard)}
+                    >
+                        Scout
+                    </button>
+                </div>
+            )}
+
             {currentUserInfo && (
-                <>
-                    {currentUserInfo.IsTurn && (
-                        <>
-                            {scoutMode && (
-                                <div className="flex justify-center gap-4">
-                                    <button
-                                        className="px-4 py-2 rounded bg-green-500 text-white"
-                                        onClick={() => {
-                                            if (scoutMode.insertionPoint !== null) {
-                                                onScout(scoutMode.selectedCard, scoutMode.insertionPoint);
-                                                setScoutMode(null);
-                                            }
-                                        }}
-                                    >
-                                        Confirm Scout
-                                    </button>
-                                    <button
-                                        className="px-4 py-2 rounded bg-red-500 text-white"
-                                        onClick={() => setScoutMode(null)}
-                                    >
-                                        Cancel Scout
-                                    </button>
-                                </div>
-                            )}
-                            {!scoutMode && (
-                                <div className="flex justify-center gap-4">
-                                    <button
-                                        className={`px-4 py-2 rounded ${canPlay ? 'bg-green-500 text-white' : 'bg-gray-300'}`}
-                                        disabled={!canPlay}
-                                        onClick={() => onPlay(selectedHandCards)}
-                                    >
-                                        Play
-                                    </button>
-                                    <button
-                                        className={`px-4 py-2 rounded ${canScout ? 'bg-green-500 text-white' : 'bg-gray-300'}`}
-                                        disabled={!canScout}
-                                        onClick={() => selectedPlayCard && handleScoutClick()}
-                                    >
-                                        Scout
-                                    </button>
-                                </div>
-                            )}
-                        </>
-                    )}
-                    <CardRow
-                        cards={getHandWithInsertionPoints(currentUserInfo.Cards)}
-                        label="Your Hand"
-                        selectable={scoutMode !== null || currentUserInfo?.IsTurn}
-                        insertFilter={ scoutMode!== null }
-                        selectedCards={selectedHandCards}
-                        onCardClick={(card) => {
-                            if (scoutMode && card.Primary === -1) {
-                                setScoutMode({
-                                    ...scoutMode,
-                                    insertionPoint: card.Secondary
-                                });
-                            }
-                            else {
-                                handleHandCardClick(card);
-                            }
-                        }}
-                        overlap={true}
-                    />
-                </>
+                <CardRow
+                    cards={currentUserInfo.Cards}
+                    label="Your Hand"
+                    selectable={currentUserInfo.IsTurn}
+                    selectedCards={selectedHandCards}
+                    onCardClick={handleHandCardClick}
+                    overlap={true}
+                />
             )}
         </div>
     );

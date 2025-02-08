@@ -4,39 +4,17 @@ type GameCardProps = {
     primaryValue: number;
     secondaryValue: number;
     isSelected: boolean;
-    isInsertionPoint: boolean;
 };
 
 type ColorMap = {
     [key: number]: string;
 };
 
-const InsertionPoint: React.FC<GameCardProps> = ({
-    primaryValue,
-    secondaryValue,
-    isSelected = false,
-    isInsertionPoint = false
-}) => {
-    return (
-        <div className={`
-            relative w-32 h-48 rounded-xl border-2 bg-gray-100 flex flex-col items-center justify-center
-            ${isSelected ? 'border-yellow-300 shadow-[0_0_15px_5px_rgba(253,224,71,0.8)]' : 'border-gray-300 border-dashed'}
-        `}>
-            <div className="text-gray-400 text-lg">Insert Here</div>
-        </div>
-    );
-};
-
 const GameCard: React.FC<GameCardProps> = ({
     primaryValue,
     secondaryValue,
-    isSelected = false,
-    isInsertionPoint = false
+    isSelected = false
 }) => {
-    if (isInsertionPoint || primaryValue <= 0) {
-        return <InsertionPoint primaryValue={primaryValue} secondaryValue={secondaryValue} isSelected={isSelected} isInsertionPoint={isInsertionPoint} />;
-    }
-
     const getBackgroundColor = (value: number): string => {
         const colors: ColorMap = {
             1: 'bg-red-500',

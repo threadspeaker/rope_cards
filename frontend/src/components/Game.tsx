@@ -7,9 +7,11 @@ import GameInterface from './GameInterface';
 export const Game: React.FC = () => {
   const { connection } = useSignalR();
   const {
+    lobbyId,
     playerName,
     gameState,
-    setGameState
+    setGameState,
+    setGameMode
   } = useGame();
 
   const orderCardList = (sourceCardList: GameCard[], selection: GameCard[]): GameCard[] => {
@@ -18,7 +20,7 @@ export const Game: React.FC = () => {
       let key = `${c.Primary}-${c.Secondary}`;
       indexMap.set(key, i);
     });
-    
+
     return selection.sort((a, b) => {
       let keyA = `${a.Primary}-${a.Secondary}`;
       let keyB = `${b.Primary}-${b.Secondary}`;
@@ -27,6 +29,7 @@ export const Game: React.FC = () => {
       return indexA - indexB;
     });
   };
+
 
   const parsePlayersInfosToGameState = useCallback((playerInfos: PlayerInfo[]) => {
     let newGameState: GameState = {
@@ -51,7 +54,11 @@ export const Game: React.FC = () => {
       parsePlayersInfosToGameState(playerInfos);
     });
 
-    connection.on("GameEvent", (playerInfos: PlayerInfo[]) => {
+    connection.on("GameMode", (mode: number) => {
+      setGameMode(mode);
+    });
+
+    connection.on("UpdateGameState", (playerInfos: PlayerInfo[]) => {
       parsePlayersInfosToGameState(playerInfos);
     });
 
@@ -86,6 +93,16 @@ export const Game: React.FC = () => {
     // connection?.invoke('ScoutCard', card);
   };
 
+  const handleFlip = () => {
+    console.log("It's time to flip these cards over!");
+    connection?.invoke('FlipPlayerHand', lobbyId.toUpperCase());
+  };
+
+  const handleKeep = () => {
+    console.log("It's time to keep!");
+    connection?.invoke('KeepPlayerHand', lobbyId.toUpperCase());
+  };
+
   if (!gameState) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -103,6 +120,8 @@ export const Game: React.FC = () => {
       currentUserName={playerName}
       onPlay={handlePlay}
       onScout={handleScout}
+      onFlip={handleFlip}
+      onKeep={handleKeep}
     />
   );
 };

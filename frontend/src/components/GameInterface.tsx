@@ -3,23 +3,31 @@ import { CardRow } from './CardRow';
 import { MiniHandDisplay, ScoreDisplay } from './PlayerInfo';
 import type { GameState, GameCard, ScoutMode } from '../types/Types';
 import { PlayerControls } from './PlayerControls';
+import { SetupControls } from './SetupControls';
+import { useGame } from './GameContext';
 
 type GameInterfaceProps = {
     gameState: GameState;
     currentUserName: string;
     onPlay: (cards: GameCard[]) => void;
     onScout: (card: GameCard, insertionPoint: number) => void;
+    onFlip: () => void;
+    onKeep: () => void;
 };
 
 const GameInterface: React.FC<GameInterfaceProps> = ({
     gameState,
     currentUserName,
     onPlay,
-    onScout
+    onScout,
+    onFlip,
+    onKeep
 }) => {
+    const { gameMode } = useGame();
     const [selectedHandCards, setSelectedHandCards] = useState<GameCard[]>([]);
     const [selectedPlayCard, setSelectedPlayCard] = useState<GameCard | null>(null);
     const [scoutMode, setScoutMode] = useState<ScoutMode>(null);
+    const [keepMode, setKeepMode] = useState<boolean>(false);
 
     // Don't try rendering stuff if we don't have a proper game state yet
     if (!gameState?.Players) {
@@ -27,6 +35,11 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     }
     const currentPlayer = gameState.Players.find(p => p.IsTurn);
     const currentUserInfo = gameState.Players.find(p => p.Name === currentUserName);
+
+    const handleKeepClick = () => {
+        setKeepMode(true);
+        onKeep();
+    };
 
     // When scout button is clicked:
     const handleScoutClick = () => {
@@ -47,7 +60,6 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                 Secondary: resultCard.Primary
             }
         }
-        console.log("confirmScout!", resultCard, insertionPoint);
         onScout(resultCard, insertionPoint)
     };
 
@@ -185,11 +197,13 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                 ))}
             </div>
 
-            <div className="text-center text-xl">
-                It is {currentPlayer?.Name}'s turn
-            </div>
+            {gameMode === 2 && (
+                <div className="text-center text-xl">
+                    It is {currentPlayer?.Name}'s turn
+                </div>
+            )}
 
-            {gameState.CurrentPlay && (
+            {gameState.CurrentPlay && gameMode === 2 && (
                 <CardRow
                     cards={gameState.CurrentPlay.Cards}
                     label={`${gameState.CurrentPlay.PlayerName}'s Play`}
@@ -199,7 +213,15 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                 />
             )}
 
-            {currentUserInfo?.IsTurn && (
+            {gameMode === 1 && (
+                <SetupControls
+                    onFlip={onFlip}
+                    onKeep={handleKeepClick}
+                    keepMode={keepMode}
+                />
+            )}
+
+            {currentUserInfo?.IsTurn && gameMode === 2 && (
                 <PlayerControls
                     scoutMode={scoutMode}
                     canPlay={canPlay}

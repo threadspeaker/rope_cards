@@ -19,6 +19,8 @@ interface GameContextType {
     setPageState: React.Dispatch<React.SetStateAction<'lobby' | 'game'>>;
     gameState: GameState | null;
     setGameState: React.Dispatch<React.SetStateAction<GameState | null>>;
+    gameMode: number;
+    setGameMode: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const GameContext = createContext<GameContextType | null>(null);
@@ -30,6 +32,7 @@ export const GameProvider: React.FC<{children: React.ReactNode}> = ({ children }
     const [isHost, setIsHost] = useState(false);
     const [pageState, setPageState] = useState<'lobby' | 'game'>('lobby');
     const [gameState, setGameState] = useState<GameState | null>(null);
+    const [gameMode, setGameMode] = useState<number>(0);
 
     return (
         <GameContext.Provider value={{
@@ -38,7 +41,8 @@ export const GameProvider: React.FC<{children: React.ReactNode}> = ({ children }
             players, setPlayers,
             isHost, setIsHost,
             pageState: pageState, setPageState: setPageState,
-            gameState, setGameState
+            gameState, setGameState,
+            gameMode, setGameMode
         }}>
             {children}
         </GameContext.Provider>

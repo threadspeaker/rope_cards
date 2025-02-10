@@ -1,4 +1,5 @@
 import type { GameCard, ScoutMode } from '../types/Types';
+import { useGame } from './GameContext';
 
 type TurnControlsParameters = {
     scoutMode: ScoutMode;
@@ -23,6 +24,7 @@ export const PlayerControls = ({
     confirmScout,
     cancelScoutMode,
 }: TurnControlsParameters) => {
+    const { gameMode } = useGame();
     return (
         <>
             {scoutMode && (
@@ -35,7 +37,7 @@ export const PlayerControls = ({
                                 confirmScout(false, selectedHandCards[0].Secondary);
                             }
                         }}
-                        >
+                    >
                         Scout as a {scoutMode.selectedCard.Primary}
                     </button>
                     <button
@@ -76,6 +78,7 @@ export const PlayerControls = ({
                     </button>
                 </div>
             )}
+
         </>
     )
 };

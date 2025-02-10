@@ -49,6 +49,11 @@ namespace ScoutFriends.Hubs
             {
                 lobby.Players[i].Cards = Deck.Skip(i * cardsPerPlayer).Take(cardsPerPlayer).ToList();
             }
+
+            // Flag players as needing to decide to flip or keep
+            foreach (Player player in lobby.Players) {
+                player.Keep = false;
+            }
         }
 
         public async Task StartGame(string lobbyId)
@@ -78,7 +83,7 @@ namespace ScoutFriends.Hubs
             }
 
             // Notify client to start the game
-            lobby.State = GameState.InProgress;
+            lobby.State = GameState.Setup;
             await Clients.Group(lobbyId).SendAsync("GameStarted");
 
             // Setup and notify clients of player state
@@ -97,6 +102,67 @@ namespace ScoutFriends.Hubs
                 Points = p.Points
             }).ToList();
             await Clients.Group(lobbyId).SendAsync("InitialGameState", gameState);
+            await Clients.Group(lobbyId).SendAsync("GameMode", lobby.State);
+        }
+
+        public async Task FlipPlayerHand(string lobbyId)
+        {
+            Console.WriteLine("Flip player hand in lobby: {0}, Player: {1}", lobbyId, Context.ConnectionId);
+            if (!ActiveLobbies.TryGetValue(lobbyId, out var lobby))
+            {
+                Console.WriteLine("Lobby Not found");
+                return;
+            }
+            if (lobby.State != GameState.Setup) {
+                Console.WriteLine("Can not flip a hand after setup");
+                return;
+            }
+            Player player = lobby.Players.First(p => p.ConnectionId == Context.ConnectionId);
+            if (player.Keep) {
+                Console.WriteLine("Can not flip for a player who already has kept");
+                return;
+            }
+
+            List<Card> newHand = [];
+            foreach (Card card in player.Cards)
+            {
+                newHand.Add(new Card { Primary = card.Secondary, Secondary = card.Primary});
+            }
+            player.Cards = newHand;
+            var gameState = lobby.Players.Select(p => new PlayerGameState
+            {
+                Name = p.Name,
+                IsTurn = p.IsTurn,
+                Cards = p.Cards,
+                Points = p.Points
+            }).ToList();
+            await Clients.Group(lobbyId).SendAsync("UpdateGameState", gameState);
+        }
+
+        public async Task KeepPlayerHand(string lobbyId)
+        {
+            Console.WriteLine("Keep player hand in lobby: {0}, Player: {1}", lobbyId, Context.ConnectionId);
+            if (!ActiveLobbies.TryGetValue(lobbyId, out var lobby))
+            {
+                Console.WriteLine("Lobby Not found");
+                return;
+            }
+            if (lobby.State != GameState.Setup) {
+                Console.WriteLine("Can not keep a hand after setup");
+                return;
+            }
+            Player player = lobby.Players.First(p => p.ConnectionId == Context.ConnectionId);
+            if (player.Keep) {
+                Console.WriteLine("Can not keep for a player who already has kept");
+                return;
+            }
+
+            player.Keep = true;
+
+            if (lobby.Players.All(p => p.Keep)) {
+                lobby.State = GameState.InProgress;
+                await Clients.Group(lobbyId).SendAsync("GameMode", lobby.State);
+            }
         }
     }
 }

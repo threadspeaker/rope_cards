@@ -16,16 +16,16 @@ export const SetupControls = ({
                 <button
                     className={`px-4 py-2 rounded ${!keepMode ? 'bg-green-500 text-white' : 'bg-gray-300'}`}
                     disabled={keepMode}
-                    onClick={onKeep}
+                    onClick={onFlip}
                 >
-                    Keep
+                    Invert
                 </button>
                 <button
                     className={`px-4 py-2 rounded ${!keepMode ? 'bg-green-500 text-white' : 'bg-gray-300'}`}
                     disabled={keepMode}
-                    onClick={onFlip}
+                    onClick={onKeep}
                 >
-                    Flip
+                    Keep
                 </button>
             </div>
         </>

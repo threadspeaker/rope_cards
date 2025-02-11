@@ -62,30 +62,49 @@ export const Game: React.FC = () => {
       parsePlayersInfosToGameState(playerInfos);
     });
 
+    connection.on("SetPlay", (playerName: string, cards: any[]) => {
+      setGameState(prev => {
+        if (!prev) return prev;
+
+        prev.CurrentPlay = {
+          Cards: cards.map((c) => {
+            return {
+              Primary: c.primary,
+              Secondary: c.secondary
+            } as GameCard;
+          }),
+          PlayerName: playerName
+        };
+        console.log(prev);
+        return prev;
+      });
+    });
+
     return () => {
       connection.off('InitialGameState');
       connection.off('GameEvent');
+      connection.off('UpdateGameState');
+      connection.off('SetPlay');
     };
   }, [connection, parsePlayersInfosToGameState]);
 
   const handlePlay = (cards: GameCard[]) => {
-    console.log("It's time to play some cards!");
-
     if (!gameState) return;
     let user = gameState.Players.find(p => p.Name === playerName)
     if (!user) return;
 
     cards = orderCardList(user.Cards, cards);
 
-    setGameState({
-      ...gameState,
-      CurrentPlay: {
-        PlayerName: playerName,
-        Cards: cards
-      }
-    });
+    // Stub for testing locally without server
+    // setGameState({
+    //   ...gameState,
+    //   CurrentPlay: {
+    //     PlayerName: playerName,
+    //     Cards: cards
+    //   }
+    // });
 
-    // connection?.invoke('PlayCards', cards);
+    connection?.invoke('PlayCards', lobbyId, cards);
   };
 
   const handleScout = (card: GameCard, insertionPoint: number) => {

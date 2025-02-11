@@ -51,6 +51,11 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         }
     };
 
+    const confirmPlay = (cards: GameCard[]) => {
+        setSelectedHandCards(prev => []);
+        onPlay(cards);
+    };
+
     const confirmScout = (reverse: boolean, insertionPoint: number) => {
         if (!scoutMode) return;
         let resultCard = scoutMode.selectedCard;
@@ -60,7 +65,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                 Secondary: resultCard.Primary
             }
         }
-        onScout(resultCard, insertionPoint)
+        setSelectedPlayCard(null);
+        onScout(resultCard, insertionPoint);
     };
 
     const cancelScoutMode = () => {
@@ -225,7 +231,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                 <PlayerControls
                     scoutMode={scoutMode}
                     canPlay={canPlay}
-                    onPlay={onPlay}
+                    onPlay={confirmPlay}
                     selectedHandCards={selectedHandCards}
                     canScout={canScout}
                     onScout={handleScoutClick}

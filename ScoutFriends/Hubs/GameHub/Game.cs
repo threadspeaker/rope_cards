@@ -6,6 +6,17 @@ namespace ScoutFriends.Hubs
 {
     public partial class GameHub : Hub
     {
+        private bool CardsAreEqual(Card a, Card b, bool matchInvert = false)
+        {
+            if (!matchInvert) return a.Primary == b.Primary && a.Secondary == b.Secondary;
+            else
+            {
+                return (
+                    (a.Primary == b.Primary && a.Secondary == b.Secondary) ||
+                    (a.Primary == b.Secondary && a.Secondary == b.Primary)
+                );
+            }
+        }
         private List<Player> ShufflePlayers(GameLobby lobby)
         {
             List<Player> shuffledPlayers = lobby.Players.OrderBy(x => Guid.NewGuid()).ToList();
@@ -69,8 +80,7 @@ namespace ScoutFriends.Hubs
                 Card handCard = handCards[i];
 
                 if (
-                    handCard.Primary == firstSelectionCard.Primary &&
-                    handCard.Secondary == firstSelectionCard.Secondary
+                    CardsAreEqual(handCard, firstSelectionCard)
                 )
                 {
                     startIndex = i;
@@ -234,12 +244,14 @@ namespace ScoutFriends.Hubs
             if (cards.Count == 0)
             {
                 Console.WriteLine("Can not make a play with no cards");
+                await Clients.Caller.SendAsync("PlayerError", "You can not play without any selected cards");
                 return;
             }
             Player player = lobby.Players.First(p => p.ConnectionId == Context.ConnectionId);
             if (!player.IsTurn)
             {
                 Console.WriteLine("Players can not make a play when it is not their turn");
+                await Clients.Caller.SendAsync("PlayerError", "You can not play when it isn't your turn");
                 return;
             }
             //Make sure selected cards are adjacent in the player's hand
@@ -247,6 +259,7 @@ namespace ScoutFriends.Hubs
             if (!sequential)
             {
                 Console.WriteLine("Player can not play cards that are not adjacent in their hand");
+                await Clients.Caller.SendAsync("PlayerError", "You can not play cards that aren't adjacent in your hand");
                 return;
             }
 
@@ -284,17 +297,18 @@ namespace ScoutFriends.Hubs
                 await Clients.Caller.SendAsync("PlayerError", "You can not make a play with fewer cards than the current play");
                 return;
             }
-            else if (prevCount == count) {
+            else if (prevCount == count)
+            {
                 if (isPrevSet && !isSet)
                 {
                     Console.WriteLine("Play too weak: set is stronger");
-                    await Clients.Caller.SendAsync("PlayerError", "You can not play a run when the current play is a set");
+                    await Clients.Caller.SendAsync("PlayerError", "You can not play a run with the same number of cards when the current play is a set");
                     return;
                 }
-                if (prevHighestNumber >= highestNumber)
+                else if (isPrevSet == isSet && prevHighestNumber >= highestNumber)
                 {
                     Console.WriteLine("Play too weak: max card value");
-                    await Clients.Caller.SendAsync("PlayerError", "You can make a play with cards of lower value than the current play");
+                    await Clients.Caller.SendAsync("PlayerError", "You can not make this play because your cards are of equal or lower value than the current play");
                     return;
                 }
             }
@@ -302,10 +316,14 @@ namespace ScoutFriends.Hubs
             // Play is valid!
             // Set the play as the new current
             lobby.CurrentPlay = cards;
+            lobby.CurrentPlayOwner = player.Name;
 
             // Remove the cards from the player's hand
-            int startIndex = player.Cards.FindIndex(c => c.Primary == cards[0].Primary && c.Secondary == cards[0].Secondary);
+            int startIndex = player.Cards.FindIndex(c => CardsAreEqual(c, cards[0]));
             player.Cards.RemoveRange(startIndex, cards.Count);
+
+            // Give the current player a point for each card in the previous play
+            player.Points += prevCount;
 
             // TODO: Check if the game is over (empty hand)
 
@@ -321,7 +339,102 @@ namespace ScoutFriends.Hubs
                 Points = p.Points
             }).ToList();
             await Clients.Group(lobbyId).SendAsync("UpdateGameState", gameState); // Inform about the change in hand size
-            await Clients.Group(lobbyId).SendAsync("SetPlay", player.Name, cards); // Inform about the play
+            await Clients.Group(lobbyId).SendAsync("SetPlay", lobby.CurrentPlayOwner, lobby.CurrentPlay); // Inform about the play
+        }
+
+        public async Task ScoutCard(string lobbyId, Card card, int insertIndex)
+        {
+            Console.WriteLine("Scout card {0}, {1}, {2}", lobbyId, card, insertIndex);
+            if (!ActiveLobbies.TryGetValue(lobbyId, out var lobby))
+            {
+                Console.WriteLine("Lobby Not found");
+                await Clients.Caller.SendAsync("PlayerError", "Lobby not found");
+                return;
+            }
+            Player player = lobby.Players.First(p => p.ConnectionId == Context.ConnectionId);
+            if (!player.IsTurn)
+            {
+                Console.WriteLine("Players can not scout when it is not their turn");
+                await Clients.Caller.SendAsync("PlayerError", "You can not scout when it is not your turn");
+                return;
+            }
+            if (lobby.CurrentPlay.Count == 0)
+            {
+                Console.WriteLine("Players can not scout from an empty play");
+                await Clients.Caller.SendAsync("PlayerError", "You can not scout without first selecting a card from the play");
+                return;
+            }
+            if (insertIndex < 0 || insertIndex > player.Cards.Count)
+            {
+                Console.WriteLine("insertIndex out of bounds {0} {1}", player.Cards.Count, insertIndex);
+                await Clients.Caller.SendAsync("PlayerError", "You somehow selected an invalid position in your hand");
+                return;
+            }
+
+            // Verify card is from the edge of the existing play
+            Card firstCard = lobby.CurrentPlay[0];
+            Card lastCard = lobby.CurrentPlay.TakeLast(1).ToList()[0];
+            bool isFirstCard = CardsAreEqual(firstCard, card, true);
+            bool isLastCard = !isFirstCard && CardsAreEqual(lastCard, card, true);
+            if (!isFirstCard && !isLastCard)
+            {
+                Console.WriteLine("Cards can only be scouted from the edge of the current play");
+                await Clients.Caller.SendAsync("PlayerError", "You can only scout cards that are on the edge of the current play");
+                return;
+            }
+
+            // Give the current play's owner a point
+            Player? owningPlayer = lobby.Players.Find(p => p.Name == lobby.CurrentPlayOwner);
+            if (owningPlayer == null)
+            {
+                // Somehow we had a play with no owner. If this happens, try to fix the problem by removing the play completely and
+                // letting the current play try to take their turn again. Not fair or in the rules of the game, but its best to try
+                // to keep the game going in this situation.
+                Console.WriteLine("Somehow we have a play without an owner");
+                await Clients.Caller.SendAsync("PlayerError", "Play data got messed up in the server. Take a free turn.");
+            }
+            else
+            {
+                owningPlayer.Points += 1;
+            }
+
+            // Add the card in the player's hand at the insertIndex
+            player.Cards.Insert(insertIndex, card);
+
+            // Remove the card from the current play
+            if (isFirstCard)
+            {
+                lobby.CurrentPlay.RemoveAt(0);
+            }
+            else
+            {
+                // It should already be validated that the scout was either the first or last card of the play.
+                // Since the card isn't the first one, remove the last card of the play.
+                lobby.CurrentPlay.RemoveAt(lobby.CurrentPlay.Count - 1);
+            }
+
+            // Turn moves to the next player after someone makes a play
+            SetNextPlayer(lobby);
+
+            // TODO: end the game if the owning player is the next turn
+
+            // If no cards are left in the play, remove ownership
+            if (lobby.CurrentPlay.Count == 0)
+            {
+                lobby.CurrentPlayOwner = "";
+            }
+
+
+            // Let the players know about the state of the game
+            var gameState = lobby.Players.Select(p => new PlayerGameState
+            {
+                Name = p.Name,
+                IsTurn = p.IsTurn,
+                Cards = p.Cards,
+                Points = p.Points
+            }).ToList();
+            await Clients.Group(lobbyId).SendAsync("UpdateGameState", gameState); // Inform about the change in hands
+            await Clients.Group(lobbyId).SendAsync("SetPlay", lobby.CurrentPlayOwner, lobby.CurrentPlay); // Inform about the new play state
         }
     }
 }

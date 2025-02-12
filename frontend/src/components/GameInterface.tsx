@@ -23,7 +23,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     onFlip,
     onKeep
 }) => {
-    const { gameMode } = useGame();
+    const { gameMode, playerError } = useGame();
     const [selectedHandCards, setSelectedHandCards] = useState<GameCard[]>([]);
     const [selectedPlayCard, setSelectedPlayCard] = useState<GameCard | null>(null);
     const [scoutMode, setScoutMode] = useState<ScoutMode>(null);
@@ -66,6 +66,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
             }
         }
         setSelectedPlayCard(null);
+        setScoutMode(null);
         onScout(resultCard, insertionPoint);
     };
 
@@ -213,8 +214,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                 <CardRow
                     cards={gameState.CurrentPlay.Cards}
                     label={`${gameState.CurrentPlay.PlayerName}'s Play`}
-                    selectable={currentUserInfo?.IsTurn || false}
-                    selectedCards={selectedPlayCard ? [selectedPlayCard] : []}
+                    selectable={(scoutMode && currentUserInfo?.IsTurn) || false}
+                    selectedCards={scoutMode ? [scoutMode.selectedCard] : (selectedPlayCard ? [selectedPlayCard] : [])}
                     onCardClick={handlePlayCardClick}
                 />
             )}
@@ -239,6 +240,12 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                     confirmScout={confirmScout}
                     cancelScoutMode={cancelScoutMode}
                 />
+            )}
+
+            {playerError && (
+                <div className="mb-4 py-2 px-4 bg-red-100 text-red-700 rounded text-center inline-block mx-auto">
+                    {playerError}
+                </div>
             )}
 
             {currentUserInfo && (

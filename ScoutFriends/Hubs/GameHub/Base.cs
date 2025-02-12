@@ -8,13 +8,13 @@ namespace ScoutFriends.Hubs
     {
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
-            // TODO: Handle disconnections differently if a game is in the lobby vs in progress
-
             var lobby = ActiveLobbies.Values.FirstOrDefault(l =>
                 l.Players.Any(p => p.ConnectionId == Context.ConnectionId));
 
             if (lobby != null)
             {
+                // TODO: Handle disconnections differently if a game is in the lobby vs in progress
+
                 var player = lobby.Players.First(p => p.ConnectionId == Context.ConnectionId);
                 lobby.Players.Remove(player);
 

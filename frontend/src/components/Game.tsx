@@ -11,7 +11,8 @@ export const Game: React.FC = () => {
     playerName,
     gameState,
     setGameState,
-    setGameMode
+    setGameMode,
+    setPlayerError
   } = useGame();
 
   const orderCardList = (sourceCardList: GameCard[], selection: GameCard[]): GameCard[] => {
@@ -63,21 +64,33 @@ export const Game: React.FC = () => {
     });
 
     connection.on("SetPlay", (playerName: string, cards: any[]) => {
+      setPlayerError(null);
       setGameState(prev => {
         if (!prev) return prev;
 
-        prev.CurrentPlay = {
-          Cards: cards.map((c) => {
-            return {
-              Primary: c.primary,
-              Secondary: c.secondary
-            } as GameCard;
-          }),
-          PlayerName: playerName
-        };
-        console.log(prev);
+        if (!playerName || !cards) {
+          prev.CurrentPlay = undefined;
+        }
+        else if (playerName === "" || cards.length === 0) {
+          prev.CurrentPlay = undefined;
+        }
+        else {
+          prev.CurrentPlay = {
+            Cards: cards.map((c) => {
+              return {
+                Primary: c.primary,
+                Secondary: c.secondary
+              } as GameCard;
+            }),
+            PlayerName: playerName
+          };
+        }
         return prev;
       });
+    });
+
+    connection.on("PlayerError", (message: string) => {
+      setPlayerError(message);
     });
 
     return () => {
@@ -85,6 +98,7 @@ export const Game: React.FC = () => {
       connection.off('GameEvent');
       connection.off('UpdateGameState');
       connection.off('SetPlay');
+      connection.off('PlayerError');
     };
   }, [connection, parsePlayersInfosToGameState]);
 
@@ -108,17 +122,15 @@ export const Game: React.FC = () => {
   };
 
   const handleScout = (card: GameCard, insertionPoint: number) => {
-    console.log("It's time to scout some cards!");
-    // connection?.invoke('ScoutCard', card);
+    setPlayerError(null);
+    connection?.invoke('ScoutCard', lobbyId.toUpperCase(), card, insertionPoint);
   };
 
   const handleFlip = () => {
-    console.log("It's time to flip these cards over!");
     connection?.invoke('FlipPlayerHand', lobbyId.toUpperCase());
   };
 
   const handleKeep = () => {
-    console.log("It's time to keep!");
     connection?.invoke('KeepPlayerHand', lobbyId.toUpperCase());
   };
 

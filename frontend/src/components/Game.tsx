@@ -67,26 +67,28 @@ export const Game: React.FC = () => {
       setPlayerError(null);
       setGameState(prev => {
         if (!prev) return prev;
-
+    
+        const newState = { ...prev };
+    
         if (!playerName || !cards) {
-          prev.CurrentPlay = undefined;
+            newState.CurrentPlay = undefined;
         }
         else if (playerName === "" || cards.length === 0) {
-          prev.CurrentPlay = undefined;
+            newState.CurrentPlay = undefined;
         }
         else {
-          prev.CurrentPlay = {
-            Cards: cards.map((c) => {
-              return {
-                Primary: c.primary,
-                Secondary: c.secondary
-              } as GameCard;
-            }),
-            PlayerName: playerName
-          };
+            newState.CurrentPlay = {
+                Cards: cards.map((c) => {
+                    return {
+                        Primary: c.primary,
+                        Secondary: c.secondary
+                    } as GameCard;
+                }),
+                PlayerName: playerName
+            };
         }
-        return prev;
-      });
+        return newState;
+    });
     });
 
     connection.on("PlayerError", (message: string) => {

@@ -265,7 +265,7 @@ namespace ScoutFriends.Hubs
 
             int count = cards.Count;
             int highestNumber = cards.Max(c => c.Primary);
-            bool isSet = cards.All(c => c.Primary == cards[0].Primary);
+            bool isSet = count > 1 ? cards.All(c => c.Primary == cards[0].Primary) : false;
             bool isAcending = isSet ? false : true;
             bool isDecending = isSet ? false : true;
             for (int i = 1; i < cards.Count; i++)

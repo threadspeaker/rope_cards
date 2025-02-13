@@ -1,5 +1,4 @@
 import type { GameCard, ScoutMode } from '../types/Types';
-import { useGame } from './GameContext';
 
 type TurnControlsParameters = {
     scoutMode: ScoutMode;
@@ -24,7 +23,6 @@ export const PlayerControls = ({
     confirmScout,
     cancelScoutMode,
 }: TurnControlsParameters) => {
-    const { gameMode } = useGame();
     return (
         <>
             {scoutMode && (

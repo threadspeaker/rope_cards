@@ -5,6 +5,7 @@ import type { GameState, GameCard, ScoutMode } from '../types/Types';
 import { PlayerControls } from './PlayerControls';
 import { SetupControls } from './SetupControls';
 import { useGame } from './GameContext';
+import SidePanel from './SidePanel';
 
 type GameInterfaceProps = {
     gameState: GameState;
@@ -191,72 +192,77 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     const canScout = selectedPlayCard !== null && selectedHandCards.length === 0;
 
     return (
-        <div className="w-full max-w-screen-2xl mx-auto p-4 flex flex-col gap-8">
-            <div className="flex justify-between items-start px-8">
-                {gameState.Players.map(player => (
-                    <div key={player.Name} className="flex flex-col items-center gap-2">
-                        <h2 className={`text-xl font-bold ${player.IsTurn ? 'underline' : ''}`}>
-                            {player.Name}
-                        </h2>
-                        <ScoreDisplay score={player.Points} />
-                        <MiniHandDisplay count={player.Cards.length} />
+        <div className="flex w-full h-screen">
+            {/* Main game content */}
+            <div className="w-full max-w-screen-2xl mx-auto p-4 flex flex-col gap-8">
+                <div className="flex justify-between items-start px-8">
+                    {gameState.Players.map(player => (
+                        <div key={player.Name} className="flex flex-col items-center gap-2">
+                            <h2 className={`text-xl font-bold ${player.IsTurn ? 'underline' : ''}`}>
+                                {player.Name}
+                            </h2>
+                            <ScoreDisplay score={player.Points} />
+                            <MiniHandDisplay count={player.Cards.length} />
+                        </div>
+                    ))}
+                </div>
+
+                {gameMode === 2 && (
+                    <div className="text-center text-xl">
+                        It is {currentPlayer?.Name}'s turn
                     </div>
-                ))}
+                )}
+
+                {gameState.CurrentPlay && gameMode === 2 && (
+                    <CardRow
+                        cards={gameState.CurrentPlay.Cards}
+                        label={`${gameState.CurrentPlay.PlayerName}'s Play`}
+                        selectable={(scoutMode && currentUserInfo?.IsTurn) || false}
+                        selectedCards={scoutMode ? [scoutMode.selectedCard] : (selectedPlayCard ? [selectedPlayCard] : [])}
+                        onCardClick={handlePlayCardClick}
+                    />
+                )}
+
+                {gameMode === 1 && (
+                    <SetupControls
+                        onFlip={onFlip}
+                        onKeep={handleKeepClick}
+                        keepMode={keepMode}
+                    />
+                )}
+
+                {currentUserInfo?.IsTurn && gameMode === 2 && (
+                    <PlayerControls
+                        scoutMode={scoutMode}
+                        canPlay={canPlay}
+                        onPlay={confirmPlay}
+                        selectedHandCards={selectedHandCards}
+                        canScout={canScout}
+                        onScout={handleScoutClick}
+                        selectedPlayCard={selectedPlayCard}
+                        confirmScout={confirmScout}
+                        cancelScoutMode={cancelScoutMode}
+                    />
+                )}
+
+                {playerError && (
+                    <div className="mb-4 py-2 px-4 bg-red-100 text-red-700 rounded text-center inline-block mx-auto">
+                        {playerError}
+                    </div>
+                )}
+
+                {currentUserInfo && (
+                    <CardRow
+                        cards={userHandDisplayCards()}
+                        label="Your Hand"
+                        selectable={currentUserInfo.IsTurn}
+                        selectedCards={selectedHandCards}
+                        onCardClick={handleHandCardClick}
+                    />
+                )}
             </div>
 
-            {gameMode === 2 && (
-                <div className="text-center text-xl">
-                    It is {currentPlayer?.Name}'s turn
-                </div>
-            )}
-
-            {gameState.CurrentPlay && gameMode === 2 && (
-                <CardRow
-                    cards={gameState.CurrentPlay.Cards}
-                    label={`${gameState.CurrentPlay.PlayerName}'s Play`}
-                    selectable={(scoutMode && currentUserInfo?.IsTurn) || false}
-                    selectedCards={scoutMode ? [scoutMode.selectedCard] : (selectedPlayCard ? [selectedPlayCard] : [])}
-                    onCardClick={handlePlayCardClick}
-                />
-            )}
-
-            {gameMode === 1 && (
-                <SetupControls
-                    onFlip={onFlip}
-                    onKeep={handleKeepClick}
-                    keepMode={keepMode}
-                />
-            )}
-
-            {currentUserInfo?.IsTurn && gameMode === 2 && (
-                <PlayerControls
-                    scoutMode={scoutMode}
-                    canPlay={canPlay}
-                    onPlay={confirmPlay}
-                    selectedHandCards={selectedHandCards}
-                    canScout={canScout}
-                    onScout={handleScoutClick}
-                    selectedPlayCard={selectedPlayCard}
-                    confirmScout={confirmScout}
-                    cancelScoutMode={cancelScoutMode}
-                />
-            )}
-
-            {playerError && (
-                <div className="mb-4 py-2 px-4 bg-red-100 text-red-700 rounded text-center inline-block mx-auto">
-                    {playerError}
-                </div>
-            )}
-
-            {currentUserInfo && (
-                <CardRow
-                    cards={userHandDisplayCards()}
-                    label="Your Hand"
-                    selectable={currentUserInfo.IsTurn}
-                    selectedCards={selectedHandCards}
-                    onCardClick={handleHandCardClick}
-                />
-            )}
+            <SidePanel/>
         </div>
     );
 };

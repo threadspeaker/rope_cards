@@ -156,14 +156,16 @@ export const Lobby: React.FC = () => {
                         </ul>
                     </div>
 
-                    <div className='flex justify-center'>
-                        <button
-                            className="bg-blue-500 text-white m-4 p-2 rounded hover:bg-blue-600 transition-colors"
-                            onClick={startGame}
-                        >
-                            Start Scouting!
-                        </button>
-                    </div>
+                    {isHost && (
+                        <div className='flex justify-center'>
+                            <button
+                                className="bg-blue-500 text-white m-4 p-2 rounded hover:bg-blue-600 transition-colors"
+                                onClick={startGame}
+                            >
+                                Start Scouting!
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         );

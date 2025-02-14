@@ -12,7 +12,8 @@ export const Game: React.FC = () => {
     gameState,
     setGameState,
     setGameMode,
-    setPlayerError
+    setPlayerError,
+    setPageState
   } = useGame();
 
   const orderCardList = (sourceCardList: GameCard[], selection: GameCard[]): GameCard[] => {
@@ -95,12 +96,18 @@ export const Game: React.FC = () => {
       setPlayerError(message);
     });
 
+    connection.on('FinishGame', (playerInfos: PlayerInfo[]) => {
+      parsePlayersInfosToGameState(playerInfos);
+      setPageState('finish');
+    });
+
     return () => {
       connection.off('InitialGameState');
       connection.off('GameEvent');
       connection.off('UpdateGameState');
       connection.off('SetPlay');
       connection.off('PlayerError');
+      connection.off('FinishGame');
     };
   }, [connection, parsePlayersInfosToGameState]);
 

@@ -19,7 +19,6 @@ const SidePanel: React.FC<SidePanelProps> = ({ children }) => {
         if (!connection) return;
 
         connection.on('GameLog', (message: string) => {
-            console.log("Got a message");
             addMessageToGameLog(message);
         });
 

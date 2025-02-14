@@ -5,6 +5,6 @@ namespace ScoutFriends.Enums
         WaitingForPlayers,
         Setup,
         InProgress,
-        Compeated
+        Compleated
     }
 }

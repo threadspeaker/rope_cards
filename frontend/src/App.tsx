@@ -3,6 +3,7 @@ import { SignalRProvider } from './components/SignalRContext';
 import { GameProvider, useGame } from './components/GameContext';
 import { Lobby } from './components/Lobby';
 import { Game } from './components/Game';
+import { Finish } from './components/Finish';
 
 export const App: React.FC = () => {
   return (
@@ -16,5 +17,9 @@ export const App: React.FC = () => {
 
 const GameStateRouter: React.FC = () => {
   const { pageState } = useGame();
-  return pageState === 'lobby' ? <Lobby /> : <Game />;
+  return (
+    pageState === 'lobby' ? <Lobby />
+    : pageState === 'game' ? <Game />
+    : <Finish />
+  );
 };

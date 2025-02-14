@@ -113,7 +113,7 @@ namespace ScoutFriends.Hubs
             lobby.Players[nextPlayerIndex].IsTurn = true;
         }
 
-        private bool TryEndGame(GameLobby lobby)
+        private bool IsEndGame(GameLobby lobby)
         {
             bool anyEmptyHand = lobby.Players.Any(p => p.Cards.Count == 0);
             bool currentPlayerOwnsPlay = lobby.Players.Find(
@@ -126,8 +126,54 @@ namespace ScoutFriends.Hubs
                 return false;
             }
 
-
             return true;
+        }
+
+        private async Task EndGame(GameLobby lobby)
+        {
+            if (lobby.State != GameState.InProgress)
+            {
+                Console.WriteLine("Can not end a game that isn't in progress");
+                return;
+            }
+            lobby.State = GameState.Compleated;
+            foreach (Player player in lobby.Players)
+            {
+                if (player.Cards.Count > 0)
+                {
+                    bool isSet = player.Cards.All(c => c.Primary == player.Cards[0].Primary);
+                    bool isAcending = isSet ? false : true;
+                    bool isDecending = isSet ? false : true;
+                    for (int i = 1; i < player.Cards.Count; i++)
+                    {
+                        if (player.Cards[i].Primary != player.Cards[i - 1].Primary + 1)
+                        {
+                            isAcending = false;
+                        }
+                        if (player.Cards[i].Primary != player.Cards[i - 1].Primary - 1)
+                        {
+                            isDecending = false;
+                        }
+                        if (!isAcending && !isDecending) break;
+                    }
+                    bool isRun = isAcending || isDecending;
+
+                    if (!isSet && !isRun)
+                    {
+                        player.Points -= player.Cards.Count;
+                    }
+                }
+            }
+
+            var gameState = lobby.Players.Select(p => new PlayerGameState
+            {
+                Name = p.Name,
+                IsTurn = p.IsTurn,
+                Cards = p.Cards,
+                Points = p.Points
+            }).ToList();
+            await Clients.Group(lobby.Id).SendAsync("FinishGame", gameState); // Inform about the ending scores
+            await Clients.Group(lobby.Id).SendAsync("GameMode", lobby.State);
         }
 
         public async Task StartGame(string lobbyId)
@@ -139,7 +185,12 @@ namespace ScoutFriends.Hubs
                 await Clients.Caller.SendAsync("Error", "Lobby not found");
                 return;
             }
-
+            if (lobby.State != GameState.WaitingForPlayers)
+            {
+                Console.WriteLine("Can not start a game already in progress");
+                await Clients.Caller.SendAsync("Error", "Game already in progress");
+                return;
+            }
             // Verify the caller is the host
             if (Context.ConnectionId != lobby.HostConnectionId)
             {
@@ -256,6 +307,12 @@ namespace ScoutFriends.Hubs
                 await Clients.Caller.SendAsync("PlayerError", "Lobby not found");
                 return;
             }
+            if (lobby.State != GameState.InProgress)
+            {
+                Console.WriteLine("Can not play cards for a game that isn't in progress");
+                await Clients.Caller.SendAsync("Error", "Can not play cards for a game that isn't in progress");
+                return;
+            }
             if (cards.Count == 0)
             {
                 Console.WriteLine("Can not make a play with no cards");
@@ -340,14 +397,18 @@ namespace ScoutFriends.Hubs
             // Give the current player a point for each card in the previous play
             player.Points += prevCount;
 
+            // Turn moves to the next player after someone makes a play
+            SetNextPlayer(lobby);
+
             // Check if the game is over (empty hand)
-            bool gameEnd = TryEndGame(lobby);
+            bool gameEnd = IsEndGame(lobby);
 
-            if (!gameEnd)
+            if (gameEnd)
             {
-                // Turn moves to the next player after someone makes a play
-                SetNextPlayer(lobby);
-
+                await EndGame(lobby);
+            }
+            else
+            {
                 // Let the players know about the new play
                 var gameState = lobby.Players.Select(p => new PlayerGameState
                 {
@@ -376,6 +437,12 @@ namespace ScoutFriends.Hubs
             {
                 Console.WriteLine("Lobby Not found");
                 await Clients.Caller.SendAsync("PlayerError", "Lobby not found");
+                return;
+            }
+            if (lobby.State != GameState.InProgress)
+            {
+                Console.WriteLine("Can not scout in a game that isn't in progress");
+                await Clients.Caller.SendAsync("Error", "Can not scout in a game that isn't in progress");
                 return;
             }
             Player player = lobby.Players.First(p => p.ConnectionId == Context.ConnectionId);
@@ -444,9 +511,13 @@ namespace ScoutFriends.Hubs
             SetNextPlayer(lobby);
 
             // End the game if the owning player is the next turn
-            bool gameEnd = TryEndGame(lobby);
+            bool gameEnd = IsEndGame(lobby);
 
-            if (!gameEnd)
+            if (gameEnd)
+            {
+                await EndGame(lobby);
+            }
+            else
             {
                 // If no cards are left in the play, remove ownership
                 if (lobby.CurrentPlay.Count == 0)

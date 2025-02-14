@@ -15,8 +15,8 @@ interface GameContextType {
     setPlayers: React.Dispatch<React.SetStateAction<Player[]>>;
     isHost: boolean;
     setIsHost: React.Dispatch<React.SetStateAction<boolean>>;
-    pageState: 'lobby' | 'game';
-    setPageState: React.Dispatch<React.SetStateAction<'lobby' | 'game'>>;
+    pageState: 'lobby' | 'game' | 'finish';
+    setPageState: React.Dispatch<React.SetStateAction<'lobby' | 'game' | 'finish'>>;
     gameState: GameState | null;
     setGameState: React.Dispatch<React.SetStateAction<GameState | null>>;
     gameMode: number;
@@ -32,7 +32,7 @@ export const GameProvider: React.FC<{children: React.ReactNode}> = ({ children }
     const [lobbyId, setLobbyId] = useState('');
     const [players, setPlayers] = useState<Player[]>([]);
     const [isHost, setIsHost] = useState(false);
-    const [pageState, setPageState] = useState<'lobby' | 'game'>('lobby');
+    const [pageState, setPageState] = useState<'lobby' | 'game' | 'finish'>('lobby');
     const [gameState, setGameState] = useState<GameState | null>(null);
     const [gameMode, setGameMode] = useState<number>(0);
     const [playerError, setPlayerError] = useState<string | null>(null);
@@ -43,7 +43,7 @@ export const GameProvider: React.FC<{children: React.ReactNode}> = ({ children }
             lobbyId, setLobbyId,
             players, setPlayers,
             isHost, setIsHost,
-            pageState: pageState, setPageState: setPageState,
+            pageState: pageState, setPageState,
             gameState, setGameState,
             gameMode, setGameMode,
             playerError, setPlayerError

@@ -67,14 +67,15 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
             }
         }
         setSelectedPlayCard(null);
+        setSelectedHandCards([]);
         setScoutMode(null);
         onScout(resultCard, insertionPoint);
     };
 
     const cancelScoutMode = () => {
         setScoutMode(null);
-        setSelectedHandCards(_ => []);
-        setSelectedPlayCard(_ => null);
+        setSelectedHandCards([]);
+        setSelectedPlayCard(null);
     };
 
     const userHandDisplayCards = (): GameCard[] => {

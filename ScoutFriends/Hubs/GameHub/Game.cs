@@ -288,7 +288,7 @@ namespace ScoutFriends.Hubs
             }
 
             player.Keep = true;
-            await Clients.Group(lobbyId).SendAsync("GameLog", $"{player.Name} has made their choice.");
+            await Clients.Group(lobbyId).SendAsync("GameLog", $"{player.Name} has chosen their starting hand.");
 
             if (lobby.Players.All(p => p.Keep))
             {

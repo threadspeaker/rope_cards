@@ -131,6 +131,12 @@ namespace ScoutFriends.Hubs
 
         private async Task EndGame(GameLobby lobby)
         {
+            Player? emptyHandPlayer = lobby.Players.Find(p => p.Cards.Count == 0);
+            bool currentPlayerOwnsPlay = lobby.Players.Find(
+                p => p.Name == lobby.CurrentPlayOwner &&
+                p.IsTurn
+            ) != null;
+
             if (lobby.State != GameState.InProgress)
             {
                 Console.WriteLine("Can not end a game that isn't in progress");
@@ -163,6 +169,15 @@ namespace ScoutFriends.Hubs
                         player.Points -= player.Cards.Count;
                     }
                 }
+            }
+
+            if (emptyHandPlayer != null)
+            {
+                await Clients.Group(lobby.Id).SendAsync("GameLog", $"The game is over because {emptyHandPlayer.Name} has no cards left in their hand!");
+            }
+            else if (currentPlayerOwnsPlay)
+            {
+                await Clients.Group(lobby.Id).SendAsync("GameLog", $"The game is over because nobody beat {lobby.CurrentPlayOwner}'s play before their next turn!");
             }
 
             var gameState = lobby.Players.Select(p => new PlayerGameState
@@ -400,9 +415,17 @@ namespace ScoutFriends.Hubs
             // Turn moves to the next player after someone makes a play
             SetNextPlayer(lobby);
 
+            if (prevCount > 0)
+            {
+                await Clients.Group(lobbyId).SendAsync("GameLog", $"{player.Name} has made a better play. They score {prevCount} points.");
+            }
+            else
+            {
+                await Clients.Group(lobby.Id).SendAsync("GameLog", $"{player.Name} has made a play.");
+            }
+
             // Check if the game is over (empty hand)
             bool gameEnd = IsEndGame(lobby);
-
             if (gameEnd)
             {
                 await EndGame(lobby);
@@ -419,14 +442,6 @@ namespace ScoutFriends.Hubs
                 }).ToList();
                 await Clients.Group(lobbyId).SendAsync("UpdateGameState", gameState); // Inform about the change in hand size
                 await Clients.Group(lobbyId).SendAsync("SetPlay", lobby.CurrentPlayOwner, lobby.CurrentPlay); // Inform about the play
-                if (prevCount > 0)
-                {
-                    await Clients.Group(lobbyId).SendAsync("GameLog", $"{player.Name} has made a better play. They score {prevCount} points.");
-                }
-                else
-                {
-                    await Clients.Group(lobby.Id).SendAsync("GameLog", $"{player.Name} has made a play.");
-                }
             }
         }
 
@@ -510,9 +525,10 @@ namespace ScoutFriends.Hubs
             // Turn moves to the next player after someone makes a play
             SetNextPlayer(lobby);
 
+            await Clients.Group(lobbyId).SendAsync("GameLog", $"{player.Name} has scouted a card. {owningPlayer!.Name} scores a point.");
+
             // End the game if the owning player is the next turn
             bool gameEnd = IsEndGame(lobby);
-
             if (gameEnd)
             {
                 await EndGame(lobby);
@@ -536,7 +552,6 @@ namespace ScoutFriends.Hubs
                 }).ToList();
                 await Clients.Group(lobbyId).SendAsync("UpdateGameState", gameState); // Inform about the change in hands
                 await Clients.Group(lobbyId).SendAsync("SetPlay", lobby.CurrentPlayOwner, lobby.CurrentPlay); // Inform about the new play state
-                await Clients.Group(lobbyId).SendAsync("GameLog", $"{player.Name} has scouted a card. {owningPlayer!.Name} scores a point.");
             }
         }
     }

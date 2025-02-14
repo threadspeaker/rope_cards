@@ -42,7 +42,7 @@ export const Finish: React.FC = () => {
         <div className="flex justify-between items-start px-8">
           {gameState.Players.map(player => (
             <div key={player.Name} className="flex flex-col items-center gap-2">
-              <h2 className={`text-xl font-bold ${player.IsTurn ? 'underline' : ''}`}>
+              <h2 className={"`text-xl font-bold"}>
                 {player.Name}
               </h2>
               <ScoreDisplay score={player.Points} />

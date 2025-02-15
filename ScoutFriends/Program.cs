@@ -6,6 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+var corsSettings = builder.Configuration.GetSection("CorsSettings").Get<CorsSettings>();
+
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddSignalR();
@@ -15,7 +17,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowReactApp",
         builder => builder
-            .WithOrigins("http://localhost:3000")
+            .WithOrigins(corsSettings?.AllowedOrigins ?? Array.Empty<string>())
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials());

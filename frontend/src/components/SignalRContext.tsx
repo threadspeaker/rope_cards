@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
+import { environment } from '../config/environment';
 
 interface SignalRContextType {
   connection: HubConnection | null;
@@ -17,7 +18,7 @@ export const SignalRProvider: React.FC<{children: React.ReactNode}> = ({ childre
 
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl('http://localhost:5079/gamehub')
+      .withUrl(environment.SIGNALR_HUB_URL)
       .withAutomaticReconnect()
       .build();
 

@@ -19,6 +19,13 @@ const stagingConfig: EnvironmentConfig = {
 */
 
 const getEnvironmentConfig = (): EnvironmentConfig => {
+  console.log('Environment variables:', {
+    NODE_ENV: process.env.NODE_ENV,
+    REACT_APP_ENV: process.env.REACT_APP_ENV,
+    REACT_APP_SIGNALR_HUB_URL: process.env.REACT_APP_SIGNALR_HUB_URL,
+    all: process.env // see all environment variables
+  });
+
   return {
     SIGNALR_HUB_URL: (process.env.REACT_APP_SIGNALR_HUB_URL || 'http://localhost:5079/gamehub')
   }

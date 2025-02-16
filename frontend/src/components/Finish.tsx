@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useSignalR } from './SignalRContext';
-import { Player, useGame } from './GameContext';
+import { useGame } from './GameContext';
 import SidePanel from './SidePanel';
 import { MiniHandDisplay, ScoreDisplay } from './PlayerInfo';
 
@@ -34,7 +34,7 @@ export const Finish: React.FC = () => {
         max_score = player.Points;
       }
   });
-  let winners = gameState.Players.filter(p => p.Points == max_score).map(p => p.Name);
+  let winners = gameState.Players.filter(p => p.Points === max_score).map(p => p.Name);
 
   return (
     <div className="flex w-full h-screen">
@@ -52,7 +52,7 @@ export const Finish: React.FC = () => {
         </div>
         <div className="flex w-full h-full items-center">
           <h1 className="mx-auto text-9xl font-black">
-            {winners.length == 1 && `${winners[0]} is the winner!`}
+            {winners.length === 1 && `${winners[0]} is the winner!`}
             {winners.length > 1 && `${winners.join(", ")} have tied with the highest score`}
           </h1>
         </div>

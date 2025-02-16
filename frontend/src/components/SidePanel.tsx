@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Dot } from 'lucide-react';
 import { useSignalR } from './SignalRContext';
 import { useGame } from './GameContext';
@@ -13,7 +13,7 @@ const SidePanel: React.FC<SidePanelProps> = ({ children }) => {
 
     const addMessageToGameLog = useCallback((message: string) => {
         setLog(prev => [...prev, message]);
-    }, []);
+    }, [setLog]);
 
     useEffect(() => {
         if (!connection) return;
@@ -25,7 +25,7 @@ const SidePanel: React.FC<SidePanelProps> = ({ children }) => {
         return () => {
             connection.off('GameLog');
         };
-    }, [connection]);
+    }, [connection, addMessageToGameLog]);
 
     return (
         <div

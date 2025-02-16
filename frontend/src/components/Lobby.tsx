@@ -21,16 +21,16 @@ export const Lobby: React.FC = () => {
         setIsHost(true);
         setPlayers(prev => [...prev, { name: hostName, isHost: true }]);
         setError('');
-    }, [isHost]);
+    }, [isHost, setIsHost, setLobbyId, setPlayers]);
 
     const handlePlayerJoined = useCallback((playerName: string, isHost: boolean) => {
         setPlayers(prev => [...prev, { name: playerName, isHost: isHost }]);
         setError('');
-    }, []); // No dependencies needed since we're using functional updates
+    }, [setPlayers]);
 
     const handlePlayerLeft = useCallback((playerName: string) => {
         setPlayers(prev => prev.filter(p => p.name !== playerName));
-    }, []); // No dependencies needed since we're using functional updates
+    }, [setPlayers]);
 
     const handleNewHost = useCallback((hostName: string) => {
         setPlayers(prev => prev.map(p => ({
@@ -38,7 +38,7 @@ export const Lobby: React.FC = () => {
             isHost: p.name === hostName
         })));
         setIsHost(playerName === hostName);
-    }, []); // No dependencies needed since we're using functional updates
+    }, [playerName, setIsHost, setPlayers]);
 
     useEffect(() => {
         if (!connection) return;
@@ -62,7 +62,7 @@ export const Lobby: React.FC = () => {
             connection.off('GameStarted');
             connection.off('Error');
         };
-    }, [connection]);
+    }, [connection, handleLobbyCreated, handleNewHost, handlePlayerJoined, handlePlayerLeft, setPageState]);
 
     const createLobby = useCallback(async () => {
         if (!playerName.trim()) {

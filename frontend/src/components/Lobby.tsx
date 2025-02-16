@@ -21,7 +21,7 @@ export const Lobby: React.FC = () => {
         setIsHost(true);
         setPlayers(prev => [...prev, { name: hostName, isHost: true }]);
         setError('');
-    }, [isHost, setIsHost, setLobbyId, setPlayers]);
+    }, [setIsHost, setLobbyId, setPlayers]);
 
     const handlePlayerJoined = useCallback((playerName: string, isHost: boolean) => {
         setPlayers(prev => [...prev, { name: playerName, isHost: isHost }]);

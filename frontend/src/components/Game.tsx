@@ -109,7 +109,7 @@ export const Game: React.FC = () => {
       connection.off('PlayerError');
       connection.off('FinishGame');
     };
-  }, [connection, parsePlayersInfosToGameState]);
+  }, [connection, parsePlayersInfosToGameState, setGameState, setPageState, setPlayerError, setGameMode]);
 
   const handlePlay = (cards: GameCard[]) => {
     if (!gameState) return;

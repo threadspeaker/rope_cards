@@ -5,6 +5,7 @@ namespace ScoutFriends.Models
     public class GameLobby
     {
         public string Id { get; set; } = Guid.NewGuid().ToString("N")[..6].ToUpper(); // 6-character room code
+        public int SetupPlayerTokens { get; set; } = 1;
         public required string HostConnectionId { get; set; }
         public GameState State { get; set; } = GameState.WaitingForPlayers;
         public List<Player> Players { get; set; } = new();

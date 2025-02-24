@@ -9,6 +9,8 @@ namespace ScoutFriends.Models
         public int Points { get; set; } = 0;
         public bool IsTurn { get; set; } = false;
         public bool Keep { get; set; } = false;
+        public int Tokens { get; set; } = 1;
+        public bool IsTokenMode { get; set; } = false;
     }
 
     // DTO
@@ -18,5 +20,7 @@ namespace ScoutFriends.Models
         public required bool IsTurn { get; set; }
         public required int Points { get; set; }
         public required List<Card> Cards { get; set; }
+        public int Tokens { get; set; } = 1;
+        public bool IsTokenMode { get; set; } = false;
     }
 }

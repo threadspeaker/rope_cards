@@ -14,6 +14,7 @@ type GameInterfaceProps = {
     onScout: (card: GameCard, insertionPoint: number) => void;
     onFlip: () => void;
     onKeep: () => void;
+    onEnd: () => void;
 };
 
 const GameInterface: React.FC<GameInterfaceProps> = ({
@@ -22,7 +23,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
     onPlay,
     onScout,
     onFlip,
-    onKeep
+    onKeep,
+    onEnd
 }) => {
     const { gameMode, playerError } = useGame();
     const [selectedHandCards, setSelectedHandCards] = useState<GameCard[]>([]);
@@ -69,6 +71,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         setSelectedPlayCard(null);
         setSelectedHandCards([]);
         setScoutMode(null);
+        
         onScout(resultCard, insertionPoint);
     };
 
@@ -76,6 +79,10 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
         setScoutMode(null);
         setSelectedHandCards([]);
         setSelectedPlayCard(null);
+    };
+
+    const endTurn = () => {
+        onEnd();
     };
 
     const userHandDisplayCards = (): GameCard[] => {
@@ -218,7 +225,7 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                     <CardRow
                         cards={gameState.CurrentPlay.Cards}
                         label={`${gameState.CurrentPlay.PlayerName}'s Play`}
-                        selectable={(scoutMode && currentUserInfo?.IsTurn) || false}
+                        selectable={(!scoutMode && currentUserInfo?.IsTurn) || false}
                         selectedCards={scoutMode ? [scoutMode.selectedCard] : (selectedPlayCard ? [selectedPlayCard] : [])}
                         onCardClick={handlePlayCardClick}
                     />
@@ -243,6 +250,8 @@ const GameInterface: React.FC<GameInterfaceProps> = ({
                         selectedPlayCard={selectedPlayCard}
                         confirmScout={confirmScout}
                         cancelScoutMode={cancelScoutMode}
+                        tokenMode={currentUserInfo.TokenMode}
+                        endTurn={endTurn}
                     />
                 )}
 

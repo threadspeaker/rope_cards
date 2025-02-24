@@ -8,6 +8,9 @@ namespace ScoutFriends.Hubs
     {
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
+            // TODO: I might have a bug where the disconnecting context doesn't have a connection id?
+
+            
             var lobby = ActiveLobbies.Values.FirstOrDefault(l =>
                 l.Players.Any(p => p.ConnectionId == Context.ConnectionId));
 

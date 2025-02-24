@@ -34,19 +34,40 @@ export const Game: React.FC = () => {
 
 
   const parsePlayersInfosToGameState = useCallback((playerInfos: PlayerInfo[]) => {
-    let newGameState: GameState = {
-      Players: playerInfos.map((player: any) => ({
-        Name: player.name,
-        IsTurn: player.isTurn,
-        Cards: player.cards.map((card: any) => ({
-          Primary: card.primary,
-          Secondary: card.secondary
-        })),
-        Points: player.points
-      }))
-    };
-
-    setGameState(newGameState);
+    setGameState(prev => {
+      let newGameState = null;
+      if (prev === null) {
+        newGameState = {
+          Players: playerInfos.map((player: any) => ({
+            Name: player.name,
+            IsTurn: player.isTurn,
+            Cards: player.cards.map((card: any) => ({
+              Primary: card.primary,
+              Secondary: card.secondary
+            })),
+            Points: player.points,
+            Tokens: player.tokens,
+            TokenMode: player.isTokenMode,
+          }))
+        } as GameState;
+        return newGameState;
+      }
+      else {
+        newGameState = { ...prev }
+        newGameState.Players = playerInfos.map((player: any) => ({
+          Name: player.name,
+          IsTurn: player.isTurn,
+          Cards: player.cards.map((card: any) => ({
+            Primary: card.primary,
+            Secondary: card.secondary
+          })),
+          Points: player.points,
+          Tokens: player.tokens,
+          TokenMode: player.isTokenMode,
+        }))
+        return newGameState;
+      }
+    });
   }, [setGameState]);
 
   useEffect(() => {
@@ -143,6 +164,10 @@ export const Game: React.FC = () => {
     connection?.invoke('KeepPlayerHand', lobbyId.toUpperCase());
   };
 
+  const handleEndTurn = () => {
+    connection?.invoke("EndTurn", lobbyId.toUpperCase());
+  };
+
   if (!gameState) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -162,6 +187,7 @@ export const Game: React.FC = () => {
       onScout={handleScout}
       onFlip={handleFlip}
       onKeep={handleKeep}
+      onEnd={handleEndTurn}
     />
   );
 };

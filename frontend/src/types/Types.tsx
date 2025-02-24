@@ -13,6 +13,8 @@ export type PlayerInfo = {
     IsTurn: boolean;
     Cards: GameCard[];
     Points: number;
+    Tokens: number;
+    TokenMode: boolean;
 };
 
 export type GameState = {
